@@ -1,6 +1,6 @@
 module row_histogram #(
-    parameter DATA_WIDTH = 8, 
-    parameter BIN_WIDTH = 11, 
+    parameter DATA_WIDTH      = 8, 
+    parameter BIN_WIDTH       = 11, 
     parameter HISTOGRAM_WIDTH = BIN_WIDTH * 9 
 ) (
     input                            clk, rst, 

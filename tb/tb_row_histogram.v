@@ -19,10 +19,10 @@ module tb_row_histogram();
         assign histogram_2d[i] = row_histogram[i*BIN_WIDTH +: BIN_WIDTH];
     end
 
-    row_histogram#(
+    row_histogram #(
         .DATA_WIDTH ( DATA_WIDTH ),
         .BIN_WIDTH  ( BIN_WIDTH )
-    )dut(
+    ) dut (
         .clk        ( clk        ),
         .rst        ( rst        ),
         .in_valid   ( in_valid   ),

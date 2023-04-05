@@ -29,7 +29,12 @@ module kernel_shiftreg #(
         case (current_state)
             S_IDLE: begin
                 if (in_ready && in_valid) begin
-                    next_state = S_BUFFER;
+                    if (BLOCK_WIDTH == 1) begin 
+                        next_state = S_STREAM;
+                    end
+                    else begin 
+                        next_state = S_BUFFER;
+                    end
                 end
             end
             S_BUFFER: begin
@@ -71,9 +76,13 @@ module kernel_shiftreg #(
             out_data <= 0; 
         end
         else if (in_valid && in_ready) begin 
-            out_data <= {in_data, out_data[OUTPUT_WIDTH-1 : DATA_WIDTH]};
+            if (BLOCK_WIDTH == 1) begin 
+                out_data <= in_data;
+            end
+            else begin
+                out_data <= {in_data, out_data[OUTPUT_WIDTH-1 : DATA_WIDTH]};
+            end
         end
     end
-
 
 endmodule
