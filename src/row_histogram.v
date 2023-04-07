@@ -1,7 +1,8 @@
 module row_histogram #(
     parameter DATA_WIDTH      = 8, 
     parameter BIN_WIDTH       = 11, 
-    parameter HISTOGRAM_WIDTH = BIN_WIDTH * 9 
+    parameter BINS            = 10, // 10th bin for the sum of all magnitudes
+    parameter HISTOGRAM_WIDTH = BIN_WIDTH * BINS 
 ) (
     input                            clk, rst, 
     input                            in_valid, out_ready, 
@@ -11,8 +12,6 @@ module row_histogram #(
     output [HISTOGRAM_WIDTH-1:0]     row_histogram 
 ); 
 
-    // TODO: Add an intermediate state to output combinationally, next cycle output the 
-    //       registered one. 
     parameter S_IDLE = 0; 
     parameter S_ACCUM = 1; 
     parameter S_BYPASS = 2;
@@ -24,8 +23,16 @@ module row_histogram #(
     reg [3:0] bin_cnt; 
 
     // perform the accumulation combinationally
+    // [hardcoded to support 9 bins]
     always @(*) begin 
         bin_accum = bin_accum_reg; // default value;
+
+        // accumulate all bin values into the 10th bin
+        bin_accum[9*BIN_WIDTH +: BIN_WIDTH] = 
+            bin_accum_reg[9*BIN_WIDTH +: BIN_WIDTH] + magnitude; 
+
+        // I don't know if I could've directly used "bin_index" to slice
+        // the accumulator, but it stays like this for now...
         case (bin_index)
             4'd0: begin 
                 bin_accum[0*BIN_WIDTH +: BIN_WIDTH] = 

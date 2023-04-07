@@ -2,7 +2,8 @@
 module tb_row_histogram(); 
     parameter DATA_WIDTH = 8;
     parameter BIN_WIDTH = 11;
-    parameter HISTOGRAM_WIDTH = BIN_WIDTH * 9;
+    parameter BINS = 10;  // 10th bin is just for the sum of all magnitudes
+    parameter HISTOGRAM_WIDTH = BIN_WIDTH * BINS;
 
     reg                            clk, rst;
     reg                            in_valid, out_ready;
@@ -12,10 +13,10 @@ module tb_row_histogram();
     wire [HISTOGRAM_WIDTH-1:0]     row_histogram; 
 
     reg [2:0]                      bin_3bit;
-    wire [BIN_WIDTH-1:0] histogram_2d [0:8];
+    wire [BIN_WIDTH-1:0] histogram_2d [0:BINS-1];
 
     genvar i; 
-    for (i = 0; i < 9; i = i + 1) begin 
+    for (i = 0; i < BINS; i = i + 1) begin 
         assign histogram_2d[i] = row_histogram[i*BIN_WIDTH +: BIN_WIDTH];
     end
 
