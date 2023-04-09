@@ -1,7 +1,7 @@
 `timescale 1ns/1ns
 module tb_cell_histogram (); 
     parameter DATA_WIDTH       = 8;
-    parameter IMAGE_WIDTH      = 640;
+    parameter IMAGE_WIDTH      = 32;
     parameter INPUT_BIN_WIDTH  = 11;
     parameter OUTPUT_BIN_WIDTH = 14;
     parameter HISTOGRAM_WIDTH  = OUTPUT_BIN_WIDTH * 9;
@@ -73,7 +73,7 @@ module tb_cell_histogram ();
             magnitude = $random; 
         end
         in_valid = 1; 
-        repeat (25) begin 
+        repeat (500) begin 
             @(posedge clk); 
             bin_3bit = $random;
             bin_index = bin_3bit ; 

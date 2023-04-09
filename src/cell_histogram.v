@@ -13,7 +13,7 @@ module cell_histogram #(
     output [HISTOGRAM_WIDTH-1:0] full_histogram // one full histogram output
 ); 
 
-    localparam BINS                         = 9;
+    localparam BINS                         = 9 + 1; // extra bin for the sum
     localparam PARTIAL_HISTOGRAM_WIDTH      = INPUT_BIN_WIDTH * BINS;
     localparam CELL_PARTIAL_HISTOGRAM_WIDTH = PARTIAL_HISTOGRAM_WIDTH * 8;
     localparam CELLS_PER_ROW                = IMAGE_WIDTH / 8; 
