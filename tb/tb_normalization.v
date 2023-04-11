@@ -7,8 +7,10 @@ module tb_normalization ();
     parameter INPUT_WIDTH     = BIN_WIDTH * (BINS+1) * CELLS_PER_BLOCK;
     parameter OUTPUT_WIDTH    = BINS * CELLS_PER_BLOCK; // 1 bit per bin
 
-    reg                     in_valid; // gate the circuit to save power
+    reg                     in_valid; // gate the circuit to save dynamic power
+    reg                     k_border; 
     reg [INPUT_WIDTH-1:0]   block_histograms;
+    wire                    out_valid;
     wire [OUTPUT_WIDTH-1:0] normalized_block; 
 
     wire [BIN_WIDTH-1:0] block_histograms_3d [0:CELLS_PER_BLOCK-1][0:BINS];
@@ -32,16 +34,18 @@ module tb_normalization ();
     normalization#(
         .BIN_WIDTH        ( BIN_WIDTH ),
         .BINS             ( BINS ),
-        .CELLS_PER_BLOCK  ( CELLS_PER_BLOCK ),
-        .PIXELS_PER_CELL  ( PIXELS_PER_CELL )
+        .CELLS_PER_BLOCK  ( CELLS_PER_BLOCK )
     )dut(
         .in_valid         ( in_valid         ),
+        .k_border         ( k_border         ),
         .block_histograms ( block_histograms ),
-        .normalized_block  ( normalized_block  )
+        .out_valid        ( out_valid        ),
+        .normalized_block ( normalized_block )
     );
 
     initial begin
         in_valid = 0;
+        k_border = 0; 
         block_histograms = {
             $random, $random, $random, $random, $random,
             $random, $random, $random, $random, $random,
@@ -50,12 +54,14 @@ module tb_normalization ();
             $random, $random, $random, $random, $random
             };
         #10 in_valid = 1; 
+        k_border = 1; 
 
         repeat (20) begin 
             #10; 
         end
 
         in_valid = 0; 
+        k_border = 0; 
         repeat (10) begin 
             #10; 
             block_histograms = {

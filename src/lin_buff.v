@@ -118,7 +118,7 @@ module lin_buff #(
             .DATA_WIDTH(BUFFER_WIDTH), 
             .FIFO_DEPTH(BUFFER_DEPTH - BLOCK_WIDTH), 
             .KERNEL_WIDTH(BLOCK_WIDTH)
-        ) file_line (
+        ) first_line (
             .clk(clk), .rst(rst), 
             .w_data(k_to_f_data), .r_data(f_to_k_data),
             .w_valid(k_to_f_valid), .w_ready(k_to_f_ready),
