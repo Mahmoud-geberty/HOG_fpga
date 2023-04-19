@@ -23,7 +23,7 @@ module row_histogram #(
     reg [3:0] bin_cnt; 
 
     // perform the accumulation combinationally
-    // [hardcoded to support 9 bins]
+    // [hardcoded to support 9 bins + the 10th sum bin]
     always @(*) begin 
         bin_accum = bin_accum_reg; // default value;
 

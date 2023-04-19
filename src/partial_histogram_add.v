@@ -21,6 +21,7 @@ module partial_histogram_add #(
     for (i = 0; i < BINS; i = i + 1) begin 
         // the ith bin of the output is the sum of 
         // the ith bins of each row (partial histogram)
+        // ** aware that this could be another loop, too lazy to change it...
         assign full_histogram[i*OUTPUT_BIN_WIDTH +: OUTPUT_BIN_WIDTH] = 
             partial_histogram[i*INPUT_BIN_WIDTH +: INPUT_BIN_WIDTH] + 
             partial_histogram[i*INPUT_BIN_WIDTH+99 +: INPUT_BIN_WIDTH] + 

@@ -1,7 +1,5 @@
 // takes  cell histograms and produces normalized blocks
 
-// TODO: wire the k_border signal
-
 module norm_block#(
     parameter IMAGE_WIDTH        = 640,
     parameter IMAGE_HEIGHT       = 480,

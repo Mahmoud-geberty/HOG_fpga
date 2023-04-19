@@ -1,12 +1,13 @@
 module detection_window #(
     parameter IMAGE_WIDTH = 640,
     parameter INPUT_WIDTH = 36,
-    parameter BLOCKS_PER_WINDOW = 32,
+    parameter BLOCKS_PER_WINDOW = 32, // 4 block columns and 8 rows
     parameter OUTPUT_WIDTH = INPUT_WIDTH * BLOCKS_PER_WINDOW
 ) (
     input clk, rst, 
     input in_valid, out_ready,
     input [INPUT_WIDTH-1:0] normalized_block,
+    output out_valid, in_ready,
     output [OUTPUT_WIDTH-1:0] detection_window
 ); 
 

@@ -1,9 +1,11 @@
+// TODO: double check the vertical stride in the buffer, its likely the cells 
+//       are overlapping vertically when they shouldn't
 module cell_histogram #(
     parameter DATA_WIDTH       = 8, // magnitude data width
     parameter IMAGE_WIDTH      = 640, // default 480p, width in pixels
     parameter INPUT_BIN_WIDTH  = 11,
     parameter OUTPUT_BIN_WIDTH = 14,
-    parameter HISTOGRAM_WIDTH  = OUTPUT_BIN_WIDTH * 9
+    parameter HISTOGRAM_WIDTH  = OUTPUT_BIN_WIDTH * 10 // changed from 9 to 10!
 )(
     input                        clk, rst, 
     input                        in_valid, out_ready, 
@@ -63,7 +65,5 @@ module cell_histogram #(
         .partial_histogram ( partial_histogram ),
         .full_histogram    ( full_histogram    )
     );
-
-
 
 endmodule

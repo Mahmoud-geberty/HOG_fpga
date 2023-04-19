@@ -6,7 +6,6 @@ module abs #(
     output [DATA_WIDTH-1:0] data_out1, data_out2
 );
 
-
     wire input_sign1, input_sign2;
     // assign the input MSBs as sign bits
     assign input_sign1 = data_in1[DATA_WIDTH];
