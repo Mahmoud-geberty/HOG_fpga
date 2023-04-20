@@ -35,11 +35,11 @@ module custom_fifo #(
   // increment whenever data is written, w_addr is a mod(fifo_depth) counter.
   always @(posedge clk, posedge rst)
   begin
-    if (rst)
-    begin w_addr <= 0;
+    if (rst) begin 
+      w_addr <= 0;
     end
-    else if (w_valid && w_ready && w_addr == FIFO_DEPTH-1)
-    begin w_addr <= 0;
+    else if (w_valid && w_ready && w_addr == FIFO_DEPTH-1) begin 
+      w_addr <= 0;
     end
     else if (w_valid && w_ready) begin
       w_addr <= w_addr + 1;
