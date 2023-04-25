@@ -77,11 +77,13 @@ module lin_buff #(
     assign k_in_data[BUFFER_WIDTH +: BUFFER_WIDTH] = f_to_k_data;
 
     // inputs to the rest of kernel rows
-    for (j = 0; j < BLOCK_HEIGHT - 2; j = j + 1) begin:KERNEL_IN 
-        assign k_in_valid[j+2] = b_to_k_valid[j];
-        assign b_to_k_ready[j] = k_in_ready[j+2];
-        assign k_in_data[(j+2)*BUFFER_WIDTH +: BUFFER_WIDTH]  = b_to_k_data[j];
-    end
+    generate
+        for (j = 0; j < BLOCK_HEIGHT - 2; j = j + 1) begin:KERNEL_IN 
+            assign k_in_valid[j+2] = b_to_k_valid[j];
+            assign b_to_k_ready[j] = k_in_ready[j+2];
+            assign k_in_data[(j+2)*BUFFER_WIDTH +: BUFFER_WIDTH]  = b_to_k_data[j];
+        end
+    endgenerate
 
     // kernel output concatenation procedure
     assign k_out_ready[BLOCK_HEIGHT-1] = k_ready;
@@ -90,11 +92,13 @@ module lin_buff #(
     assign k_out_ready[0] = k_to_f_ready;
     assign k_to_f_data = k_out_data[0 +: BUFFER_WIDTH]; 
 
-    for (j = 0; j < BLOCK_HEIGHT-2; j = j + 1) begin:KERNEL_OUT 
-        assign k_to_b_valid[j] = k_out_valid[j+1]; 
-        assign k_out_ready[j+1] = k_to_b_ready[j]; 
-        assign k_to_b_data[j] = k_out_data[(j+1)*K_ROW_WIDTH +: BUFFER_WIDTH];
-    end
+    generate
+        for (j = 0; j < BLOCK_HEIGHT-2; j = j + 1) begin:KERNEL_OUT 
+            assign k_to_b_valid[j] = k_out_valid[j+1]; 
+            assign k_out_ready[j+1] = k_to_b_ready[j]; 
+            assign k_to_b_data[j] = k_out_data[(j+1)*K_ROW_WIDTH +: BUFFER_WIDTH];
+        end
+    endgenerate
 
     assign kernel = k_out_data;
 

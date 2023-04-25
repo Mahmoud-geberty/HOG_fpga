@@ -34,11 +34,13 @@ module normalization #(
 
     assign shifted_sum = sum >> 4; 
 
-    for (i = 0; i < BINS; i = i + 1) begin 
-        for (j = 0; j < CELLS_PER_BLOCK; j = j + 1) begin 
-            assign normalized_block[i + j*9] = 
-                (block_histograms[i*BIN_WIDTH + j*10*BIN_WIDTH +: BIN_WIDTH] >= shifted_sum); 
+    generate
+        for (i = 0; i < BINS; i = i + 1) begin : NORM_BLOCK_BINS
+            for (j = 0; j < CELLS_PER_BLOCK; j = j + 1) begin : NORM_BLOCK_CELLS
+                assign normalized_block[i + j*9] = 
+                    (block_histograms[i*BIN_WIDTH + j*10*BIN_WIDTH +: BIN_WIDTH] >= shifted_sum); 
+            end
         end
-    end
+    endgenerate
 
 endmodule

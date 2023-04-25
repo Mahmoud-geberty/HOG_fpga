@@ -18,19 +18,21 @@ module partial_histogram_add #(
     end
 
     genvar i; 
-    for (i = 0; i < BINS; i = i + 1) begin 
-        // the ith bin of the output is the sum of 
-        // the ith bins of each row (partial histogram)
-        // ** aware that this could be another loop, too lazy to change it...
-        assign full_histogram[i*OUTPUT_BIN_WIDTH +: OUTPUT_BIN_WIDTH] = 
-            partial_histogram[i*INPUT_BIN_WIDTH +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+99 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+198 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+297 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+396 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+495 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+594 +: INPUT_BIN_WIDTH] + 
-            partial_histogram[i*INPUT_BIN_WIDTH+693 +: INPUT_BIN_WIDTH];
-    end
+    generate
+        for (i = 0; i < BINS; i = i + 1) begin : FULL_HISTOGRAM
+            // the ith bin of the output is the sum of 
+            // the ith bins of each row (partial histogram)
+            // ** aware that this could be another loop, too lazy to change it...
+            assign full_histogram[i*OUTPUT_BIN_WIDTH +: OUTPUT_BIN_WIDTH] = 
+                partial_histogram[i*INPUT_BIN_WIDTH +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+99 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+198 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+297 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+396 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+495 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+594 +: INPUT_BIN_WIDTH] + 
+                partial_histogram[i*INPUT_BIN_WIDTH+693 +: INPUT_BIN_WIDTH];
+        end
+    endgenerate
 
 endmodule

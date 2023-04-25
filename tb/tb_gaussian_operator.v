@@ -1,10 +1,12 @@
 `timescale 1ns/1ns
 module tb_gaussian_operator(); 
     parameter DATA_WIDTH = 8;
-    parameter KERNEL_WIDTH = 3 * 3 * DATA_WIDTH;
+    parameter KERNEL_WIDTH = 3;
+    parameter KERNEL_HEIGHT = 3; 
+    parameter INPUT_WIDTH = KERNEL_WIDTH * KERNEL_HEIGHT * DATA_WIDTH;
 
     reg                    in_valid, out_ready;
-    reg [KERNEL_WIDTH-1:0] kernel;
+    reg [INPUT_WIDTH-1:0]  kernel;
     wire                   out_valid, in_ready;
     wire [DATA_WIDTH-1:0]  data_out;
 

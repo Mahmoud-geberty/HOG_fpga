@@ -21,7 +21,7 @@ module kernel #(
 
     genvar i;
     generate 
-        for (i = 0; i < BLOCK_HEIGHT; i = i + 1) begin 
+        for (i = 0; i < BLOCK_HEIGHT; i = i + 1) begin : KERNEL
             kernel_shiftreg #(
                 .DATA_WIDTH(DATA_WIDTH),
                 .BLOCK_WIDTH(BLOCK_WIDTH)
