@@ -56,7 +56,12 @@ module tb_lin_buff();
             pixel = $random;
             p_valid = 0; 
         end
-        $finish();
+        repeat(20) begin 
+            @(posedge clk);
+            pixel = $random;
+            p_valid = 1; 
+        end
+        $stop();
     end
 
 endmodule
