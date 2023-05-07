@@ -35,7 +35,7 @@ module gaussian_pyramid #(
     wire [LEVELS-1:0] ds_valid; 
     wire [LEVELS-1:0] filter_valid; 
 
-    wire [LEVELS-1:0] ds_ready; 
+    // wire [LEVELS-1:0] ds_ready; 
 
     // ds to gauss_f ready signal
     wire [LEVELS-1:0] ds_g_ready; 
@@ -82,7 +82,7 @@ module gaussian_pyramid #(
                 .out_ready   ( ds_g_ready[i] ),
                 .pixel       ( in_pixel[i*DATA_WIDTH +: DATA_WIDTH] ),
                 .out_valid   ( filter_valid[i] ),
-                .in_ready    ( ds_ready[i]    ),
+                .in_ready    ( g_ds_ready[i]    ),
                 .filtered_pixel  ( pyramid_pixels[i*DATA_WIDTH+:DATA_WIDTH] )
             );
 

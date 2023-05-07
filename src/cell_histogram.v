@@ -38,7 +38,6 @@ module cell_histogram #(
         .row_histogram  ( row_histogram  )
     );
 
-
     lin_buff#(
         .BUFFER_WIDTH ( PARTIAL_HISTOGRAM_WIDTH ),
         .BUFFER_DEPTH ( CELLS_PER_ROW ),

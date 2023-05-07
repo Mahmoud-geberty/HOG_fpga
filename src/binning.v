@@ -65,7 +65,7 @@ hog_magnitude#(
     .DATA_WIDTH ( DATA_WIDTH )
 )u_hog_magnitude(
     .gx ( Gx_abs ),
-    .gy ( Gx_abs ),
+    .gy ( Gy_abs ),
     .magnitude  ( magnitude  )
 );
 

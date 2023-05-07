@@ -56,7 +56,7 @@ module tb_kernel_shiftreg();
             in_valid = 1;
             out_ready = 1; 
         end
-        $finish();
+        $stop();
     end
     
 endmodule

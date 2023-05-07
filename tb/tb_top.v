@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
 module tb_top(); 
     parameter DATA_WIDTH = 8;
-    parameter IMAGE_WIDTH = 640;
-    parameter IMAGE_HEIGHT = 480;
+    parameter IMAGE_WIDTH = 320;
+    parameter IMAGE_HEIGHT = 420;
     parameter WINDOW_WIDTH = 32 * 36;
     parameter SCALE = 9;
     // only these SCALE values are valid
@@ -39,5 +39,24 @@ module tb_top();
         .pixel_ready      ( pixel_ready      ),
         .window_valid     ( window_valid     )
     );
+
+    always #5 clk = ~clk; 
+
+    initial begin 
+        clk = 0; 
+        rst = 1; 
+        pixel_in = 0; 
+        pixel_valid = 0; 
+        window_ready = {15{1'b1}}; 
+
+        repeat(1000) begin 
+            @(posedge clk); 
+            rst = 0; 
+            pixel_in = $random; 
+            pixel_valid = 1; 
+        end
+
+        $stop; 
+    end
     
 endmodule 

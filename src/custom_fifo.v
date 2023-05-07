@@ -28,7 +28,7 @@ module custom_fifo #(
     // internal signals
     reg [ADDR_WIDTH-1: 0] w_addr;
     wire [ADDR_WIDTH-1:0] r_addr;
-    wire [ADDR_WIDTH-1:0] r_addr_mux;
+    // wire [ADDR_WIDTH-1:0] r_addr_mux;
     reg                   read_enable; 
     reg                   r_valid_reg; 
     wire                  fifo_write; // memory port A write enable
@@ -79,7 +79,7 @@ module custom_fifo #(
         else if (~fifo_write) begin 
             r_valid_reg <= 'd0; 
         end
-        else begin 
+        else if (read_enable) begin 
             r_valid_reg <= 'd1; 
         end
     end
@@ -96,13 +96,11 @@ module custom_fifo #(
               (w_addr == KERNEL_WIDTH - 1) || (w_addr == KERNEL_WIDTH)
             );
 
-
-
     // only read when the fifo is full and new data is about to be written
     assign r_valid = ~read_enable? fifo_full && fifo_write: r_valid_reg;
 
-    assign r_addr_mux = (w_addr == FIFO_DEPTH-1)? 'd0: w_addr + 'd1;
-    assign r_addr = read_enable              ? r_addr_mux : 
+    // assign r_addr_mux = (w_addr == FIFO_DEPTH-1)? 'd0: w_addr + 'd1;
+    assign r_addr = read_enable              ? w_addr : 
                     (fifo_full && fifo_write)? 'd1: 'd0;
 
     // instantiate a dual-port BRAM

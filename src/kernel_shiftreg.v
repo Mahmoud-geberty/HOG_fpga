@@ -70,19 +70,28 @@ module kernel_shiftreg #(
     assign out_valid = in_valid && current_state == S_STREAM; 
     assign in_ready = out_ready; 
 
-    // 2D shifting behavior
-    always @(posedge clk, posedge rst) begin 
-        if (rst) begin 
-            out_data <= 0; 
-        end
-        else if (in_valid && in_ready) begin 
-            if (BLOCK_WIDTH == 1) begin 
-                out_data <= in_data;
+    generate
+        // 2D shifting behavior
+        if (BLOCK_WIDTH == 1) begin : NO_SHIFT_KERNEL
+            always @(posedge clk, posedge rst) begin 
+                if (rst) begin 
+                    out_data <= 0; 
+                end
+                else if (in_valid && in_ready) begin 
+                        out_data <= in_data;
+                end
             end
-            else begin
-                out_data <= {in_data, out_data[OUTPUT_WIDTH-1 : DATA_WIDTH]};
+        end
+        else begin : SHIFT_KERNEL
+            always @(posedge clk, posedge rst) begin 
+                if (rst) begin 
+                    out_data <= 0; 
+                end
+                else if (in_valid && in_ready) begin 
+                        out_data <= {in_data, out_data[OUTPUT_WIDTH-1 : DATA_WIDTH]};
+                end
             end
         end
-    end
+    endgenerate
 
 endmodule
