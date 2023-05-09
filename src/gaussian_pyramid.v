@@ -29,45 +29,48 @@ module gaussian_pyramid #(
     output [LEVELS-1:0]       out_valid,
     output [OUTPUT_WIDTH-1:0] pyramid_pixels
 ); 
-    // inter-level signals
 
-    // valid signals 
-    wire [LEVELS-1:0] ds_valid; 
-    wire [LEVELS-1:0] filter_valid; 
+    // ***********************************************
+    //     FILTER AND DOWNSAMPLER INTERFACE WIRES
+    // ***********************************************
+    
+    // filter input handshake wires 
+    wire [LEVELS-1:0] g_in_valid, g_in_ready;
 
-    // wire [LEVELS-1:0] ds_ready; 
+    // filter input pixels
+    wire [DATA_WIDTH-1:0] g_in_pixel [0:LEVELS-1]; 
 
-    // ds to gauss_f ready signal
-    wire [LEVELS-1:0] ds_g_ready; 
+    // filter output handshake
+    wire [LEVELS-1:0] filtered_valid, filtered_ready; 
 
-    // ds input indicating destination is ready to recieve the output
-    wire [LEVELS-1:0] ds_out_ready; 
+    // filter output pixels
+    wire [DATA_WIDTH-1:0] filtered_pixel [0:LEVELS-1]; 
 
-    // g to ds ready signal
-    wire [LEVELS-1:0] g_ds_ready; 
+    // downsampler output handshake 
+    wire [LEVELS-1:0] ds_valid, ds_ready; 
 
-    // gauss filter inputs (concatenated) 
-    wire [OUTPUT_WIDTH-1:0] in_pixel; 
+    // downsampler output pixel 
+    wire [DATA_WIDTH-1:0] ds_pixel [0:LEVELS-1]; 
 
-    assign in_pixel[0+:DATA_WIDTH] = pixel; 
-    assign ds_valid[0] = in_valid; 
-    assign in_ready = g_ds_ready[0]; 
-    assign ds_out_ready[LEVELS-1] = out_ready[LEVELS-1]; 
+    
+    // ***********************************************
+    //     FILTER AND DOWNSAMPLER INTERFACE ASSIGNMENTS
+    // ***********************************************
+    assign g_in_pixel[0] = pixel; 
+    assign g_in_valid[0] = in_valid; 
+    assign in_ready      = g_in_ready[0]; 
+    assign out_valid     = filtered_valid; 
+    assign ds_ready[LEVELS-1] = out_ready[LEVELS-1]; 
+    assign pyramid_pixels[0 +: DATA_WIDTH] = filtered_pixel[0]; 
 
     genvar i; 
 
     generate
         for (i = 1; i < LEVELS; i = i + 1) begin : IN_PIXEL 
-            assign in_pixel[i*DATA_WIDTH +: DATA_WIDTH] = 
-                pyramid_pixels[(i-1)*DATA_WIDTH +: DATA_WIDTH];
-        end
-
-        for (i = 1; i < LEVELS; i = i + 1) begin : DS_VALID
-            assign ds_valid[i] = out_valid[i-1]; 
-        end
-
-        for (i = 1; i < LEVELS; i = i + 1) begin : DS_OUT_READY
-            assign ds_out_ready[i-1] = g_ds_ready[i] && out_ready[i-1]; 
+            assign g_in_pixel[i] = filtered_pixel[i-1]; 
+            assign g_in_valid[i] = filtered_valid[i-1]; 
+            assign ds_ready[i-1] = out_ready[i-1] && g_in_ready[i]; 
+            assign pyramid_pixels[i*DATA_WIDTH +: DATA_WIDTH] = filtered_pixel[i]; 
         end
 
         for (i = 0; i < LEVELS; i = i + 1) begin : PYRAMID
@@ -76,14 +79,14 @@ module gaussian_pyramid #(
                 .IMAGE_WIDTH ( IMAGE_WIDTH ),
                 .IMAGE_HEIGHT ( IMAGE_HEIGHT )
             )u_gaussian_filter(
-                .clk         ( clk         ),
-                .rst         ( rst         ),
-                .in_valid    ( ds_valid[i] ),
-                .out_ready   ( ds_g_ready[i] ),
-                .pixel       ( in_pixel[i*DATA_WIDTH +: DATA_WIDTH] ),
-                .out_valid   ( filter_valid[i] ),
-                .in_ready    ( g_ds_ready[i]    ),
-                .filtered_pixel  ( pyramid_pixels[i*DATA_WIDTH+:DATA_WIDTH] )
+                .clk         ( clk               ),
+                .rst         ( rst               ),
+                .in_valid    ( g_in_valid[i]     ),
+                .out_ready   ( filtered_ready[i] ),
+                .pixel       ( g_in_pixel[i]     ),
+                .out_valid   ( filtered_valid[i] ),
+                .in_ready    ( g_in_ready[i]     ),
+                .filtered_pixel  ( filtered_pixel[i] )
             );
 
             downsample#(
@@ -91,10 +94,10 @@ module gaussian_pyramid #(
             )u_downsample(
                 .clk       ( clk       ),
                 .rst       ( rst       ),
-                .in_valid  ( filter_valid[i] ),
-                .out_ready ( ds_out_ready[i] ),
-                .out_valid ( out_valid[i] ),
-                .in_ready  ( ds_g_ready[i]  )
+                .in_valid  ( filtered_valid[i] ),
+                .out_ready ( ds_ready[i]       ),
+                .out_valid ( ds_valid[i]       ),
+                .in_ready  ( filtered_ready[i]  )
             );
         end
     endgenerate
