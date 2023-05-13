@@ -15,6 +15,15 @@ module tb_lin_buff();
     wire                    k_valid;
     wire [OUTPUT_WIDTH-1:0] kernel;
 
+    wire [BUFFER_WIDTH-1:0] kernel_2d [0:BLOCK_HEIGHT-1][BLOCK_WIDTH-1:0];
+
+    genvar i,j; 
+    for (i = 0; i < BLOCK_HEIGHT; i = i + 1) begin 
+        for (j = 0; j < BLOCK_WIDTH; j = j + 1) begin 
+            assign kernel_2d[i][j] = kernel[(i*BLOCK_WIDTH*BUFFER_WIDTH)+(j*BUFFER_WIDTH) +: BUFFER_WIDTH];
+        end
+    end
+
     lin_buff #(
         .BUFFER_WIDTH(BUFFER_WIDTH), 
         .BUFFER_DEPTH(BUFFER_DEPTH),

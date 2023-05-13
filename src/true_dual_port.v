@@ -6,7 +6,7 @@ module true_dual_port #(
 )(
 	input [(DATA_WIDTH-1):0] data_a, data_b,
 	input [(ADDR_WIDTH-1):0] addr_a, addr_b,
-	input we_a, we_b, clk,
+	input we_a, we_b, clk, rd_a, rd_b,
 	output reg [(DATA_WIDTH-1):0] q_a, q_b
 );
 
@@ -21,7 +21,7 @@ module true_dual_port #(
 			ram[addr_a] <= data_a;
 			q_a <= data_a;
 		end
-		else
+		else if (rd_a)
 			q_a <= ram[addr_a];
 	end
 
@@ -32,7 +32,7 @@ module true_dual_port #(
 			ram[addr_b] <= data_b;
 			q_b <= data_b;
 		end
-		else
+		else if (rd_b)
 			q_b <= ram[addr_b];
 	end
 endmodule

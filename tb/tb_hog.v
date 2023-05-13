@@ -2,8 +2,8 @@
 module tb_hog();
 
     parameter DATA_WIDTH = 8;
-    parameter IMAGE_WIDTH = 32;
-    parameter IMAGE_HEIGHT = 32; 
+    parameter IMAGE_WIDTH = 128;
+    parameter IMAGE_HEIGHT = 256; 
     parameter WINDOW_WIDTH = 32 * 36; 
 
     reg clk, rst;
@@ -36,7 +36,7 @@ module tb_hog();
         window_ready = 1; 
         pixel = 'd0; 
 
-        repeat (900) begin 
+        repeat (9000) begin 
             @(posedge clk);
             rst = 0; 
             pixel_valid = 1; 
