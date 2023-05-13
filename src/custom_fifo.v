@@ -4,6 +4,9 @@ date       : 17/03/2023
 description: A custom fifo only used for line buffer implementation. Indicates illegal
              kernels (border cases), not meant to be read until it is full.  */
 
+// TODO: 1. fix the fifo and fully verify the correctness of the kernels
+//       2. implement the border detection, this time factor the different kernel sizes
+
 module custom_fifo #(
     parameter DATA_WIDTH = 8,
     parameter FIFO_DEPTH = 854,
@@ -31,9 +34,8 @@ module custom_fifo #(
     wire                  read_mem; 
     // wire [ADDR_WIDTH-1:0] r_addr_mux;
     reg                   read_enable; 
-    reg                   r_valid_reg; 
+    reg [ADDR_WIDTH-1:0]  read_offset; 
     wire                  fifo_write; // memory port A write enable
-    wire                  initial_read;
 
     // write address logic
     // increment whenever data is written, w_addr is a mod(fifo_depth) counter.
@@ -61,41 +63,32 @@ module custom_fifo #(
         end
     end
 
-    // read states 
-    parameter S_DISABLE = 0; 
-    parameter S_FIRST_READ = 1; 
-    parameter S_ADDR_CORRECTION = 2; 
-    parameter S_NORMAL_READ = 3; 
-    parameter S_PAUSE = 4; 
+    assign fifo_write = w_valid && w_ready; 
 
-    reg [2:0] current_state, next_state; 
+    // read state machine 
+    parameter S_DISABLE = 0; // waiting for the fifo to be full
+    parameter S_READ    = 1; // fifo is full and read is enabled
+    parameter S_PAUSE   = 2; // backpressure
+
+    reg [1:0] current_state, next_state; 
 
     always @(*) begin 
         next_state = current_state; 
 
-        // Need a state to handle r_valid_reg going low coz of w_ready (next stage fifos)
         case (current_state)
             S_DISABLE: begin 
-                if (fifo_full && fifo_write) begin
-                    next_state = S_FIRST_READ; 
+                if (fifo_full && w_valid ) begin 
+                    next_state = S_READ;
                 end
             end
-            S_FIRST_READ: begin 
-                if (w_valid) begin 
-                    next_state = S_ADDR_CORRECTION;
-                end
-            end
-            S_ADDR_CORRECTION: begin 
-                next_state = S_NORMAL_READ; 
-            end
-            S_NORMAL_READ: begin 
-                if (!w_valid) begin 
+            S_READ: begin 
+                if (!w_valid ) begin 
                     next_state = S_PAUSE; 
                 end
             end
             S_PAUSE: begin 
                 if (w_valid) begin 
-                    next_state = S_NORMAL_READ;
+                    next_state = S_READ; 
                 end
             end
             default: next_state = current_state; 
@@ -104,7 +97,7 @@ module custom_fifo #(
 
     always @(posedge clk, posedge rst) begin 
         if (rst) begin 
-            current_state <= S_DISABLE; 
+            current_state <= S_DISABLE;
         end
         else begin 
             current_state <= next_state; 
@@ -113,82 +106,29 @@ module custom_fifo #(
 
     always @(posedge clk, posedge rst) begin 
         if (rst) begin 
-            read_enable <= 0; 
+            read_offset <= 0; 
         end
-        else if (fifo_full && fifo_write) begin 
-            read_enable <= 1; 
+        else if (next_state == S_READ && current_state != S_READ && read_offset != FIFO_DEPTH-1) begin 
+            read_offset <= read_offset + 'd1; 
         end
     end
 
     generate
         if (FIRST_LINE == 1) begin 
-            always @(posedge clk, posedge rst) begin 
-                if (rst) begin 
-                    r_valid_reg <= 'd0; 
-                end
-                else if (~fifo_write) begin 
-                    r_valid_reg <= 'd0; 
-                end
-                else if (read_enable) begin 
-                    r_valid_reg <= 'd1; 
-                end
-            end
+            assign w_ready = r_ready && !(next_state == S_READ && current_state != S_READ); 
         end
         else begin 
-            always @(posedge clk, posedge rst) begin 
-                if (rst) begin 
-                    r_valid_reg <= 'd0; 
-                end
-                else if (~fifo_write) begin 
-                    r_valid_reg <= 'd0; 
-                end
-                else if (read_enable || (w_valid && w_ready && fifo_full)) begin 
-                    r_valid_reg <= 'd1; 
-                end
-            end
+            // assign w_ready = r_ready; 
+            assign w_ready = r_ready && !(next_state == S_READ && current_state != S_READ); 
         end
     endgenerate
 
-    assign fifo_write = (w_valid && w_ready) || (w_valid && (next_state == S_ADDR_CORRECTION || next_state == S_NORMAL_READ));
+    assign read_mem = (current_state == S_READ || next_state == S_READ) ;
+    // gating r_valid seems to cause a combinational loop, simulation runs till timeout
+    assign r_valid  = current_state == S_READ; 
+    assign r_addr   = w_addr + read_offset >= FIFO_DEPTH ? (w_addr + read_offset) - FIFO_DEPTH : w_addr + read_offset; // addr offset
 
-    generate
-        // can't receive a new word when the output destination is not ready
-        // to read.
-        if (FIRST_LINE == 1) begin 
-            assign w_ready    = r_ready && (next_state != S_ADDR_CORRECTION) && current_state != S_PAUSE;
-        end
-        else begin 
-            assign w_ready    = r_ready && current_state != S_PAUSE;
-        end
-    endgenerate
-
-    // image edges are indicated by the first line buffer being full and the input
-    // to it is being written at the addresses shown in the code.
-    assign border_flag = fifo_full && (
-              (w_addr == KERNEL_WIDTH - 1) || (w_addr == KERNEL_WIDTH)
-            );
-
-    // only read when the fifo is full and new data is about to be written
-    assign r_valid = ~read_enable? fifo_full && fifo_write: r_valid_reg && w_valid;
-
-    // assign r_addr_mux = (w_addr == FIFO_DEPTH-1)? 'd0: w_addr + 'd1;
-    // assign r_addr = read_enable              ? w_addr : 
-    //                 (fifo_full && fifo_write)? 'd1: 'd0;
-
-    generate
-        if (FIRST_LINE == 1) begin 
-            assign r_addr = (current_state == S_DISABLE && next_state == S_FIRST_READ        )? 'd1:
-                            (current_state == S_DISABLE                                      )? 'd0: 
-                            (current_state == S_FIRST_READ && next_state == S_ADDR_CORRECTION)? 'd1: 
-                            // (~r_valid_reg                                                    )? w_addr: 
-                            (w_addr + 'd1  == FIFO_DEPTH                                     )? 'd0: w_addr + 'd1;
-        end
-        else begin 
-            assign r_addr = (current_state == S_DISABLE && next_state == S_FIRST_READ        )? 'd1:
-                            (current_state == S_DISABLE                                      )? 'd0: 
-                            (w_addr + 'd1  == FIFO_DEPTH                                     )? 'd0: w_addr + 'd1;
-        end
-    endgenerate
+    assign border_flag = 'd0; 
 
     // instantiate a dual-port BRAM
     true_dual_port #(
@@ -199,7 +139,7 @@ module custom_fifo #(
         .data_a(w_data), .data_b(),
         .addr_a(w_addr), .addr_b(r_addr),
         .we_a(fifo_write), .we_b(),
-        .rd_a(), rd_b(read_mem),
+        .rd_a(), .rd_b(read_mem),
         .q_a(), .q_b(r_data)
     );
 
