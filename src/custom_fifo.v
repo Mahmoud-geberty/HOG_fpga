@@ -30,10 +30,8 @@ module custom_fifo #(
 
     // internal signals
     reg [ADDR_WIDTH-1: 0] w_addr;
-    wire [ADDR_WIDTH-1:0] r_addr;
-    wire                  read_mem; 
-    // wire [ADDR_WIDTH-1:0] r_addr_mux;
-    reg                   read_enable; 
+    reg [ADDR_WIDTH-1: 0] r_addr;
+    reg                   read_mem; 
     reg [ADDR_WIDTH-1:0]  read_offset; 
     wire                  fifo_write; // memory port A write enable
 
@@ -66,9 +64,9 @@ module custom_fifo #(
     assign fifo_write = w_valid && w_ready; 
 
     // read state machine 
-    parameter S_DISABLE = 0; // waiting for the fifo to be full
-    parameter S_READ    = 1; // fifo is full and read is enabled
-    parameter S_PAUSE   = 2; // backpressure
+    parameter S_DISABLE     = 0; // waiting for the fifo to be full
+    parameter S_READ        = 1; // fifo is full and read is enabled
+    parameter S_PAUSE       = 2; // backpressure due to in_valid or in_ready deassertion
 
     reg [1:0] current_state, next_state; 
 
@@ -82,12 +80,12 @@ module custom_fifo #(
                 end
             end
             S_READ: begin 
-                if (!w_valid ) begin 
+                if (!w_valid || !w_ready) begin 
                     next_state = S_PAUSE; 
                 end
             end
             S_PAUSE: begin 
-                if (w_valid) begin 
+                if (w_valid && w_ready) begin 
                     next_state = S_READ; 
                 end
             end
@@ -104,31 +102,55 @@ module custom_fifo #(
         end
     end
 
+    // expected to increment once only at the start of the read operation
     always @(posedge clk, posedge rst) begin 
         if (rst) begin 
             read_offset <= 0; 
         end
-        else if (next_state == S_READ && current_state != S_READ && read_offset != FIFO_DEPTH-1) begin 
+        else if ((current_state == S_DISABLE && next_state == S_READ) ) begin 
             read_offset <= read_offset + 'd1; 
         end
     end
 
-    generate
-        if (FIRST_LINE == 1) begin 
-            assign w_ready = r_ready && !(next_state == S_READ && current_state != S_READ); 
-        end
-        else begin 
-            // assign w_ready = r_ready; 
-            assign w_ready = r_ready && !(next_state == S_READ && current_state != S_READ); 
-        end
-    endgenerate
-
-    assign read_mem = (current_state == S_READ || next_state == S_READ) ;
-    // gating r_valid seems to cause a combinational loop, simulation runs till timeout
-    assign r_valid  = current_state == S_READ; 
-    assign r_addr   = w_addr + read_offset >= FIFO_DEPTH ? (w_addr + read_offset) - FIFO_DEPTH : w_addr + read_offset; // addr offset
+    assign w_ready = r_ready ;
+    assign r_valid  = next_state == S_READ ;//&& (next_state == S_READ); 
 
     assign border_flag = 'd0; 
+
+    // read_mem procedure
+    always @(*) begin 
+        read_mem = 1'd1; 
+
+        if (current_state == S_READ && next_state == S_PAUSE) begin 
+            read_mem = 1'd0; 
+        end
+
+        if (current_state == S_PAUSE && next_state != S_READ) begin 
+            read_mem = 1'd0; 
+        end
+
+    end
+
+    always @(*) begin 
+        if (w_addr + read_offset >= FIFO_DEPTH) begin
+            r_addr = (w_addr + read_offset) - FIFO_DEPTH; 
+        end
+        else begin 
+            r_addr = w_addr + read_offset; 
+        end
+
+        if ((current_state == S_DISABLE && next_state == S_READ) ) begin 
+            if (w_addr + read_offset + 'd1 >= FIFO_DEPTH) begin 
+                r_addr = (w_addr + read_offset + 'd1) - FIFO_DEPTH;
+            end
+            else begin 
+                r_addr  = w_addr + read_offset + 'd1; 
+            end
+        end
+        else if (current_state == S_DISABLE) begin 
+            r_addr = 'd0;
+        end
+    end
 
     // instantiate a dual-port BRAM
     true_dual_port #(
