@@ -26,7 +26,11 @@ module custom_fifo #(
     output                  border_flag
 );
 
-    parameter ADDR_WIDTH = $clog2(FIFO_DEPTH);
+    localparam ADDR_WIDTH = $clog2(FIFO_DEPTH);
+
+    // border detection parameters
+    localparam BORDER_START_ADDR = KERNEL_WIDTH+1; 
+    localparam BORDER_END_ADDR   = BORDER_START_ADDR + (KERNEL_WIDTH-2); 
 
     // internal signals
     reg [ADDR_WIDTH-1: 0] w_addr;
@@ -34,6 +38,7 @@ module custom_fifo #(
     reg                   read_mem; 
     reg [ADDR_WIDTH-1:0]  read_offset; 
     wire                  fifo_write; // memory port A write enable
+
 
     // write address logic
     // increment whenever data is written, w_addr is a mod(fifo_depth) counter.
@@ -64,9 +69,9 @@ module custom_fifo #(
     assign fifo_write = w_valid && w_ready; 
 
     // read state machine 
-    parameter S_DISABLE     = 0; // waiting for the fifo to be full
-    parameter S_READ        = 1; // fifo is full and read is enabled
-    parameter S_PAUSE       = 2; // backpressure due to in_valid or in_ready deassertion
+    localparam S_DISABLE     = 0; // waiting for the fifo to be full
+    localparam S_READ        = 1; // fifo is full and read is enabled
+    localparam S_PAUSE       = 2; // backpressure due to in_valid or in_ready deassertion
 
     reg [1:0] current_state, next_state; 
 
@@ -115,8 +120,6 @@ module custom_fifo #(
     assign w_ready = r_ready ;
     assign r_valid  = next_state == S_READ ;//&& (next_state == S_READ); 
 
-    assign border_flag = 'd0; 
-
     // read_mem procedure
     always @(*) begin 
         read_mem = 1'd1; 
@@ -151,6 +154,66 @@ module custom_fifo #(
             r_addr = 'd0;
         end
     end
+
+    // border detection
+    localparam BORDER_COUNTER_MAX = KERNEL_WIDTH - 2; 
+    localparam BORDER_COUNTER_SIZE = $clog2(BORDER_COUNTER_MAX); 
+
+    reg                           border_active;
+    reg                           border_skip; // indicates skipping border condition
+    reg [BORDER_COUNTER_SIZE-1:0] border_cnt;  // border delay while asserted.
+    reg [ADDR_WIDTH-1:0]          border_start_addr; 
+
+
+    always @(posedge clk, posedge rst) begin
+        if (rst) begin 
+            border_start_addr <= KERNEL_WIDTH; 
+        end
+        // TODO: specify the condition at which to increment this.
+        else if (border_active && border_cnt == BORDER_COUNTER_MAX && w_valid && w_ready) begin 
+            if ((border_start_addr + KERNEL_WIDTH) >= FIFO_DEPTH) begin 
+                border_start_addr <= (border_start_addr + KERNEL_WIDTH) - FIFO_DEPTH; 
+            end
+            else begin 
+                border_start_addr <= border_start_addr + KERNEL_WIDTH; 
+            end
+        end
+    end
+
+    always @(posedge clk, posedge rst) begin 
+        if (rst) begin 
+            border_skip <= 'd0; 
+        end
+        else if (w_addr == border_start_addr && current_state != S_DISABLE && w_valid && w_ready) begin 
+            border_skip <= ~border_skip; 
+        end
+    end
+
+    always @(posedge clk, posedge rst) begin 
+        if (rst) begin 
+            border_active <= 'd0; 
+        end
+        else if (border_cnt == BORDER_COUNTER_MAX && w_valid && w_ready ) begin 
+            border_active <= 'd0; 
+        end
+        else if (w_addr == border_start_addr && border_skip && w_valid && w_ready) begin 
+            border_active <= 'd1;
+        end
+    end
+
+    always @(posedge clk, posedge rst ) begin 
+        if (rst) begin 
+            border_cnt <= 'd0; 
+        end
+        else if (border_cnt == BORDER_COUNTER_MAX && w_valid && w_ready) begin 
+            border_cnt <= 'd0;
+        end
+        else if (border_active && w_valid && w_ready) begin 
+            border_cnt <= border_cnt +'d1; 
+        end
+    end
+
+    assign border_flag = border_active; 
 
     // instantiate a dual-port BRAM
     true_dual_port #(
