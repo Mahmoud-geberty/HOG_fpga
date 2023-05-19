@@ -76,8 +76,9 @@ module gaussian_pyramid #(
         for (i = 0; i < LEVELS; i = i + 1) begin : PYRAMID
             gaussian_filter#(
                 .DATA_WIDTH  ( DATA_WIDTH ),
-                .IMAGE_WIDTH ( IMAGE_WIDTH ),
-                .IMAGE_HEIGHT ( IMAGE_HEIGHT )
+                // no padding, image gets smaller in each level
+                .IMAGE_WIDTH ( IMAGE_WIDTH - (2*i) ),
+                .IMAGE_HEIGHT ( IMAGE_HEIGHT - (2*i) )
             )u_gaussian_filter(
                 .clk         ( clk               ),
                 .rst         ( rst               ),
