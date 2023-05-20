@@ -59,8 +59,8 @@ module top #(
         for (i = 0; i < LEVELS; i = i + 1) begin: HOG 
             hog#(
                 .DATA_WIDTH   ( DATA_WIDTH ),
-                .IMAGE_WIDTH  ( IMAGE_WIDTH ),
-                .IMAGE_HEIGHT ( IMAGE_HEIGHT ),
+                .IMAGE_WIDTH  ( IMAGE_WIDTH - 2*i ),
+                .IMAGE_HEIGHT ( IMAGE_HEIGHT - 2*i ),
                 .WINDOW_WIDTH ( WINDOW_WIDTH )
             )u_hog(
                 .clk          ( clk          ),

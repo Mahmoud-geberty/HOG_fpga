@@ -1,9 +1,9 @@
 `timescale 1ns/1ns
 module tb_lin_buff();
     parameter BUFFER_WIDTH = 8;
-    parameter BUFFER_DEPTH = 9;
-    parameter BLOCK_WIDTH  = 3;
-    parameter BLOCK_HEIGHT = 3;
+    parameter BUFFER_DEPTH = 40;
+    parameter BLOCK_WIDTH  = 4;
+    parameter BLOCK_HEIGHT = 8;
     parameter OUTPUT_WIDTH = BLOCK_WIDTH * BLOCK_HEIGHT * BUFFER_WIDTH;
 
     reg                     clk, rst;
@@ -24,10 +24,14 @@ module tb_lin_buff();
         end
     end
 
+    // TODO: write the input image to a file for ease of debugging later
+    
+
     lin_buff #(
         .BUFFER_WIDTH(BUFFER_WIDTH), 
         .BUFFER_DEPTH(BUFFER_DEPTH),
-        .BLOCK_WIDTH(BLOCK_WIDTH)
+        .BLOCK_WIDTH(BLOCK_WIDTH), 
+        .BLOCK_HEIGHT(BLOCK_HEIGHT)
     ) dut (
         .clk(clk), .rst(rst), 
         .p_valid(p_valid), .pixel(pixel), 
@@ -65,7 +69,7 @@ module tb_lin_buff();
             pixel = $random;
             p_valid = 0; 
         end
-        repeat(20) begin 
+        repeat(900) begin 
             @(posedge clk);
             pixel = $random;
             p_valid = 1; 

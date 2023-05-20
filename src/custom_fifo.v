@@ -28,10 +28,6 @@ module custom_fifo #(
 
     localparam ADDR_WIDTH = $clog2(FIFO_DEPTH);
 
-    // border detection parameters
-    localparam BORDER_START_ADDR = KERNEL_WIDTH+1; 
-    localparam BORDER_END_ADDR   = BORDER_START_ADDR + (KERNEL_WIDTH-2); 
-
     // internal signals
     reg [ADDR_WIDTH-1: 0] w_addr;
     reg [ADDR_WIDTH-1: 0] r_addr;
@@ -161,7 +157,8 @@ module custom_fifo #(
 
     reg                           border_active;
     reg                           border_skip; // indicates skipping border condition
-    reg [BORDER_COUNTER_SIZE-1:0] border_cnt;  // border delay while asserted.
+    // counter is bigger than it needs to be... to avoid a declaration of [-1:0]
+    reg [BORDER_COUNTER_SIZE:0]   border_cnt;  // border delay while asserted.
     reg [ADDR_WIDTH-1:0]          border_start_addr; 
 
 
@@ -169,7 +166,6 @@ module custom_fifo #(
         if (rst) begin 
             border_start_addr <= KERNEL_WIDTH; 
         end
-        // TODO: specify the condition at which to increment this.
         else if (border_active && border_cnt == BORDER_COUNTER_MAX && w_valid && w_ready) begin 
             if ((border_start_addr + KERNEL_WIDTH) >= FIFO_DEPTH) begin 
                 border_start_addr <= (border_start_addr + KERNEL_WIDTH) - FIFO_DEPTH; 
