@@ -4,7 +4,7 @@ module tb_top();
     parameter IMAGE_WIDTH = 320;
     parameter IMAGE_HEIGHT = 420;
     parameter WINDOW_WIDTH = 32 * 36;
-    parameter SCALE = 9;
+    parameter SCALE = 4;
     // only these SCALE values are valid
     parameter LEVELS = SCALE==9? 15: 
                        SCALE==6? 10:
@@ -40,7 +40,7 @@ module tb_top();
         .window_valid     ( window_valid     )
     );
 
-    always #5 clk = ~clk; 
+    always #50 clk = ~clk; 
 
     initial begin 
         clk = 0; 
