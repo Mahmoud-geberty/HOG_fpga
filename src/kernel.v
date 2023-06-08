@@ -15,7 +15,7 @@ module kernel #(
     output                    kernel_valid
 );
 
-    parameter KERNEL_ROW_SIZE = BLOCK_WIDTH * DATA_WIDTH;
+    localparam KERNEL_ROW_SIZE = BLOCK_WIDTH * DATA_WIDTH;
 
     assign kernel_valid = out_valid[BLOCK_HEIGHT-1];
 

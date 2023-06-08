@@ -18,6 +18,9 @@ wire [KERNEL_WIDTH-1:0] kernel;
 wire [DATA_WIDTH:0] Gx, Gy;
 wire [DATA_WIDTH-1:0] Gx_abs, Gy_abs;
 
+wire k_valid, k_ready, k_border; 
+wire is_upper_bin; 
+
 lin_buff#(
     .BUFFER_WIDTH ( DATA_WIDTH ),
     .BUFFER_DEPTH ( IMAGE_WIDTH ),

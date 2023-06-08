@@ -23,7 +23,7 @@ module downsample #(
             pixel_cnt <= 0; 
         end
         else if (in_valid && in_ready) begin 
-            pixel_cnt <= pixel_cnt + 'd1; 
+            pixel_cnt <= pixel_cnt + 1; 
         end
     end
 

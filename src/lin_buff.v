@@ -28,14 +28,14 @@ module lin_buff #(
 );
 
     //concatenated kernel data I/O size in bits
-    parameter K_DATA_WIDTH = BLOCK_HEIGHT * BUFFER_WIDTH;
+    localparam K_DATA_WIDTH = BLOCK_HEIGHT * BUFFER_WIDTH;
     // kernel row size in bits
-    parameter K_ROW_WIDTH = BLOCK_WIDTH * BUFFER_WIDTH;
+    localparam K_ROW_WIDTH = BLOCK_WIDTH * BUFFER_WIDTH;
 
     // state register constants
-    parameter IDLE    = 0; // reset state
-    parameter BUFFER  = 1; // wait for all buffers to fill
-    parameter STREAM  = 2; // stream and operate on each kernel.
+    localparam IDLE    = 0; // reset state
+    localparam BUFFER  = 1; // wait for all buffers to fill
+    localparam STREAM  = 2; // stream and operate on each kernel.
 
     // connective wires (buffer interface)
     wire                    f_to_k_valid;

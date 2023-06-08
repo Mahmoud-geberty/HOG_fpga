@@ -16,6 +16,8 @@ localparam IMAGE_ROW_BLOCKS  = IMAGE_WIDTH / 16;
 localparam WINDOW_ROW_BLOCKS = 64/16;
 localparam WINDOW_COLUMN_BLOCKS = 128/16; 
 
+wire k_valid, k_border; 
+
 lin_buff#(
     .BUFFER_WIDTH ( INPUT_WIDTH ),
     .BUFFER_DEPTH ( IMAGE_ROW_BLOCKS ),

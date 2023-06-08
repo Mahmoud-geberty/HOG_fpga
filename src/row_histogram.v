@@ -12,10 +12,10 @@ module row_histogram #(
     output [HISTOGRAM_WIDTH-1:0]     row_histogram 
 ); 
 
-    parameter S_IDLE = 0; 
-    parameter S_ACCUM = 1; 
-    parameter S_BYPASS = 2;
-    parameter S_VALID = 3; 
+    localparam S_IDLE = 0; 
+    localparam S_ACCUM = 1; 
+    localparam S_BYPASS = 2;
+    localparam S_VALID = 3; 
     reg [1:0] current_state, next_state; 
 
     reg [HISTOGRAM_WIDTH-1:0] bin_accum; 
@@ -69,6 +69,9 @@ module row_histogram #(
             4'd8: begin 
                 bin_accum[8*BIN_WIDTH +: BIN_WIDTH] = 
                     bin_accum_reg[8*BIN_WIDTH +: BIN_WIDTH] + magnitude;
+            end
+            default: begin 
+                bin_accum = bin_accum_reg; 
             end
         endcase
     end

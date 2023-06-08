@@ -19,6 +19,12 @@ wire [3:0]                  bin;
 wire [HISTOGRAM_WIDTH-1:0]  cell_histogram; 
 wire [NORM_BLOCK_WIDTH-1:0] normalized_block;
 
+wire bin_ready, bin_valid; 
+wire cell_valid, cell_ready; 
+wire block_valid, block_ready; 
+
+
+
 binning#(
     .DATA_WIDTH  ( DATA_WIDTH ),
     .IMAGE_WIDTH ( IMAGE_WIDTH ),

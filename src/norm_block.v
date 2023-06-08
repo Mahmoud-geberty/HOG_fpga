@@ -25,6 +25,8 @@ module norm_block#(
 
     wire [BLOCK_HIST_WIDTH-1:0] block_histograms;
 
+    wire k_valid, k_border; 
+
     // initialize the line buffer
     lin_buff#(
         .BUFFER_WIDTH ( HISTOGRAM_WIDTH    ),

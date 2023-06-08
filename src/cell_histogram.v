@@ -23,6 +23,8 @@ module cell_histogram #(
     wire [PARTIAL_HISTOGRAM_WIDTH-1:0]      row_histogram;
     wire [CELL_PARTIAL_HISTOGRAM_WIDTH-1:0] partial_histogram;
 
+    wire p_ready, p_valid, k_border; 
+
     row_histogram#(
         .DATA_WIDTH ( DATA_WIDTH ),
         .BIN_WIDTH  ( INPUT_BIN_WIDTH )

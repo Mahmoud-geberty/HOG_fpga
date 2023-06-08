@@ -12,11 +12,11 @@ module kernel_shiftreg #(
     output                        out_valid
 ); 
 
-    parameter BUFF_SIZE = $clog2(BLOCK_WIDTH);
+    localparam BUFF_SIZE = $clog2(BLOCK_WIDTH);
 
-    parameter S_IDLE = 0; // initial (reset) state
-    parameter S_BUFFER = 1; // shift in 
-    parameter S_STREAM = 2; // shift in and out  
+    localparam S_IDLE = 0; // initial (reset) state
+    localparam S_BUFFER = 1; // shift in 
+    localparam S_STREAM = 2; // shift in and out  
 
     reg [1:0] current_state, next_state; 
 
@@ -43,6 +43,7 @@ module kernel_shiftreg #(
                 end
             end
             // stay at "stream" state until reset
+            default: next_state = current_state; 
         endcase
     end
 
@@ -60,7 +61,7 @@ module kernel_shiftreg #(
             buff_cnt <= 0; 
         end
         else if (current_state == S_BUFFER && in_valid && in_ready) begin 
-            buff_cnt <= buff_cnt + 1;  
+            buff_cnt <= buff_cnt + 'd1;  
         end
     end
 

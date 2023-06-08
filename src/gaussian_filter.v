@@ -17,6 +17,8 @@ module gaussian_filter #(
     wire [KERNEL_SIZE-1:0] kernel; 
     wire                   kernel_valid; 
 
+    wire k_valid, k_ready, k_border;
+
     lin_buff#(
         .BUFFER_WIDTH ( DATA_WIDTH ),
         .BUFFER_DEPTH ( IMAGE_WIDTH ),

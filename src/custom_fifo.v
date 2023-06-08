@@ -41,13 +41,13 @@ module custom_fifo #(
     always @(posedge clk, posedge rst)
     begin
         if (rst) begin 
-            w_addr <= 0;
+            w_addr <= 'd0;
         end
         else if (w_valid && w_ready && w_addr == FIFO_DEPTH-1) begin 
-            w_addr <= 0;
+            w_addr <= 'd0;
         end
         else if (w_valid && w_ready) begin
-            w_addr <= w_addr + 1;
+            w_addr <= w_addr + 'd1;
         end
     end
 
@@ -55,10 +55,10 @@ module custom_fifo #(
     always @(posedge clk, posedge rst)
     begin
         if (rst) begin
-            fifo_full <= 0;
+            fifo_full <= 'd0;
         end
         else if (w_valid && w_ready && w_addr == FIFO_DEPTH-1) begin
-            fifo_full <= 1;
+            fifo_full <= 'd1;
         end
     end
 
@@ -106,7 +106,7 @@ module custom_fifo #(
     // expected to increment once only at the start of the read operation
     always @(posedge clk, posedge rst) begin 
         if (rst) begin 
-            read_offset <= 0; 
+            read_offset <= 'd0; 
         end
         else if ((current_state == S_DISABLE && next_state == S_READ) ) begin 
             read_offset <= read_offset + 'd1; 
@@ -173,6 +173,10 @@ module custom_fifo #(
             else begin 
                 border_start_addr <= border_start_addr + KERNEL_WIDTH; 
             end
+        end
+        // infers a latch in some instances, hence the else block
+        else begin 
+            border_start_addr <= border_start_addr; 
         end
     end
 
